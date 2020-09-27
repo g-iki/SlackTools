@@ -13,7 +13,7 @@ import (
 func main() {
 
 	setting := readSetting()
-	getChannelList(setting.Token)
+	chMaps := getChannelMap(setting.Token)
 
 }
 
@@ -31,7 +31,8 @@ func readSetting() structure.Settings {
 	return s
 }
 
-func getChannelList(token string) {
+func getChannelMap(token string) map[string]string {
+	m := map[string]string{}
 	u := "https://slack.com/api/conversations.list?token=" +
 		token +
 		"&limit=1000&pretty=1"
@@ -44,9 +45,12 @@ func getChannelList(token string) {
 
 	if err := json.Unmarshal(jb, d); err != nil {
 		fmt.Println("JSON Unmarshal error:", err)
-		return
+		return m
 	}
+
 	for _, v := range d.Channels {
-		fmt.Println(v)
+		m[v.ID] = v.Name
 	}
+
+	return m
 }
