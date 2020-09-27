@@ -5,6 +5,7 @@ type ChannelLists struct {
 	Channels []struct {
 		ID                 string        `json:"id"`
 		Name               string        `json:"name"`
+		User               string        `json:"user"`
 		IsChannel          bool          `json:"is_channel"`
 		IsGroup            bool          `json:"is_group"`
 		IsIm               bool          `json:"is_im"`
