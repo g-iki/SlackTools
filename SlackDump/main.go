@@ -13,8 +13,12 @@ import (
 func main() {
 
 	setting := readSetting()
-	chMaps := getChannelMap(setting.Token)
+	chMapsPublic := getChannelMap("public_channel", setting.Token)
+	chMapsPrivate := getChannelMap("private_channel", setting.Token)
+	chMapsMpin := getChannelMap("mpim", setting.Token)
+	chMapsIm := getChannelMap("im", setting.Token)
 
+	fmt.Print(chMapsPublic, chMapsPrivate, chMapsMpin, chMapsIm)
 }
 
 func readSetting() structure.Settings {
@@ -31,10 +35,12 @@ func readSetting() structure.Settings {
 	return s
 }
 
-func getChannelMap(token string) map[string]string {
+func getChannelMap(chType string, token string) map[string]string {
 	m := map[string]string{}
 	u := "https://slack.com/api/conversations.list?token=" +
 		token +
+		"&types=" +
+		chType +
 		"&limit=1000&pretty=1"
 	res, _ := http.Get(u)
 	defer res.Body.Close()
@@ -49,7 +55,14 @@ func getChannelMap(token string) map[string]string {
 	}
 
 	for _, v := range d.Channels {
-		m[v.ID] = v.Name
+		if v.User != "" {
+			m[v.ID] = v.User
+			fmt.Println(v.ID, v.User)
+		} else {
+			m[v.ID] = v.Name
+			fmt.Println(v.ID, v.Name)
+		}
+
 	}
 
 	return m
