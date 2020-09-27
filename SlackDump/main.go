@@ -15,8 +15,14 @@ var token string
 func main() {
 
 	readSetting()
-	chMaps := getChannelMap()
-	getConversationHistory(chMaps)
+	readSetting()
+	chMapsPublic := getChannelMap("public_channel")
+	chMapsPrivate := getChannelMap("private_channel")
+	chMapsMpin := getChannelMap("mpim")
+	chMapsIm := getChannelMap("im")
+
+	fmt.Print(chMapsPublic, chMapsPrivate, chMapsMpin, chMapsIm)
+
 }
 
 func readSetting() {
@@ -33,10 +39,12 @@ func readSetting() {
 
 }
 
-func getChannelMap() map[string]string {
+func getChannelMap(chType string) map[string]string {
 	m := map[string]string{}
 	u := "https://slack.com/api/conversations.list?token=" +
 		token +
+		"&types=" +
+		chType +
 		"&limit=1000&pretty=1"
 	res, _ := http.Get(u)
 	defer res.Body.Close()
@@ -51,8 +59,14 @@ func getChannelMap() map[string]string {
 	}
 
 	for _, v := range d.Channels {
-		m[v.ID] = v.Name
-		fmt.Println(v.ID, v.Name)
+		if v.User != "" {
+			m[v.ID] = v.User
+			fmt.Println(v.ID, v.User)
+		} else {
+			m[v.ID] = v.Name
+			fmt.Println(v.ID, v.Name)
+		}
+
 	}
 
 	return m
@@ -76,10 +90,10 @@ func getConversationHistory(ch string) error {
 		return err
 	}
 
-	for _, v := range d.Messages {
-		m[v.ID] = v.Name
-		fmt.Println(v.ID, v.Name)
-	}
+	// for _, v := range d.Messages {
+	// 	m[v.ID] = v.Name
+	// 	fmt.Println(v.ID, v.Name)
+	// }
 
 	return nil
 
