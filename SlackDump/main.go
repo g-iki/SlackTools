@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"unsafe"
 
 	"./structure"
 )
@@ -17,11 +18,25 @@ func main() {
 	readSetting()
 	readSetting()
 	chMapsPublic := getChannelMap("public_channel")
+	fmt.Println("public===============================")
+	for k, _ := range chMapsPublic {
+		getConversationHistory(k)
+	}
+	fmt.Println("private===============================")
 	chMapsPrivate := getChannelMap("private_channel")
+	for k, v := range chMapsPrivate {
+		fmt.Println(k, v)
+	}
+	fmt.Println("mpim===============================")
 	chMapsMpin := getChannelMap("mpim")
+	for k, v := range chMapsMpin {
+		fmt.Println(k, v)
+	}
+	fmt.Println("im===============================")
 	chMapsIm := getChannelMap("im")
-
-	fmt.Print(chMapsPublic, chMapsPrivate, chMapsMpin, chMapsIm)
+	for k, v := range chMapsIm {
+		fmt.Println(k, v)
+	}
 
 }
 
@@ -61,10 +76,8 @@ func getChannelMap(chType string) map[string]string {
 	for _, v := range d.Channels {
 		if v.User != "" {
 			m[v.ID] = v.User
-			fmt.Println(v.ID, v.User)
 		} else {
 			m[v.ID] = v.Name
-			fmt.Println(v.ID, v.Name)
 		}
 
 	}
@@ -83,12 +96,15 @@ func getConversationHistory(ch string) error {
 	ba, _ := ioutil.ReadAll(res.Body)
 
 	jb := ([]byte)(ba)
-	d := new(structure.Conversations)
 
-	if err := json.Unmarshal(jb, d); err != nil {
-		fmt.Println("JSON Unmarshal error:", err)
-		return err
-	}
+	fmt.Println(*(*string)(unsafe.Pointer(&jb)))
+
+	// d := new(structure.Conversations)
+
+	// if err := json.Unmarshal(jb, d); err != nil {
+	// 	fmt.Println("JSON Unmarshal error:", err)
+	// 	return err
+	// }
 
 	// for _, v := range d.Messages {
 	// 	m[v.ID] = v.Name
@@ -98,3 +114,13 @@ func getConversationHistory(ch string) error {
 	return nil
 
 }
+
+// func fileWrite(filename string, jb ([]byte)(ba)) {
+//     file, err := os.OpenFile(filename, os.O_CREATE 0666)
+//     if err != nil {
+//         //エラー処理
+//         log.Fatal(err)
+//     }
+//     defer file.Close()
+//     fmt.Fprintln(file, "書き込み〜")
+// }
