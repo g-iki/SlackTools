@@ -6,12 +6,15 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
+	"time"
 	"unsafe"
 
 	"./structure"
 )
 
 var token string
+var now = strconv.FormatInt(time.Now().Unix(), 10)
 
 func main() {
 
@@ -19,8 +22,8 @@ func main() {
 	readSetting()
 	chMapsPublic := getChannelMap("public_channel")
 	fmt.Println("public===============================")
-	for k, _ := range chMapsPublic {
-		getConversationHistory(k)
+	for k, v := range chMapsPublic {
+		getConversationHistory(k, v)
 	}
 	fmt.Println("private===============================")
 	chMapsPrivate := getChannelMap("private_channel")
@@ -85,7 +88,7 @@ func getChannelMap(chType string) map[string]string {
 	return m
 }
 
-func getConversationHistory(ch string) error {
+func getConversationHistory(ch string, chname string) error {
 	u := "https://slack.com/api/conversations.history?token=" +
 		token +
 		"&channel=" + ch +
@@ -96,8 +99,7 @@ func getConversationHistory(ch string) error {
 	ba, _ := ioutil.ReadAll(res.Body)
 
 	jb := ([]byte)(ba)
-
-	fmt.Println(*(*string)(unsafe.Pointer(&jb)))
+	fileWeite(ch, chname, "main", *(*string)(unsafe.Pointer(&jb)))
 
 	// d := new(structure.Conversations)
 
@@ -115,12 +117,19 @@ func getConversationHistory(ch string) error {
 
 }
 
-// func fileWrite(filename string, jb ([]byte)(ba)) {
-//     file, err := os.OpenFile(filename, os.O_CREATE 0666)
-//     if err != nil {
-//         //エラー処理
-//         log.Fatal(err)
-//     }
-//     defer file.Close()
-//     fmt.Fprintln(file, "書き込み〜")
-// }
+func fileWeite(ch string, chname string, filename string, data string) error {
+	dir := "output/" + now + "/" + chname + "/"
+
+	if _, err := os.Stat(dir); err != nil {
+		if err := os.MkdirAll(dir, 0777); err != nil {
+			return err
+		}
+	}
+
+	path := dir + filename + ".json"
+	err := ioutil.WriteFile(path, []byte(data), 0777)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return err
+}
